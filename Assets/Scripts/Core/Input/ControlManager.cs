@@ -33,7 +33,9 @@ public class ControlManager : MonoBehaviour
 
         if(game)
         {
-           playerInput.actions["Quit"].started += ctx => game.OnEscape();
+            playerInput.actions["Quit"].started += ctx => game.OnEscape();
+
+            playerInput.actions["Interact"].started += ctx => game.PlayerActionPressed();
         }
 
         if(camRotation)

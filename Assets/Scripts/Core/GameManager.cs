@@ -8,7 +8,8 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private bool inMenu; public bool InMenu { get => inMenu; set => inMenu = value; }
 
     [Header("Elements")]
-    public CanvasManager canvasManager;
+    [SerializeField] private WorldManager world; public WorldManager World => world;
+    [SerializeField] private CanvasManager canvasManager; public CanvasManager CanvasManager => canvasManager;
 
     public void Start()
     {
@@ -25,6 +26,21 @@ public class GameManager : Singleton<GameManager>
         }
 
         SceneLoader.LoadScene(levelList.list[value].sceneName);
+    }
+
+    public void LoadMainMenu()
+    {
+        SceneLoader.LoadScene("MainMenu");
+    }
+
+    public void PlayerActionPressed()
+    {
+        if (CanvasManager && CanvasManager.dialogManager)
+        {
+            CanvasManager.dialogManager.PlayerActionPressed();
+        }
+
+        // Also send to player to make some actions?
     }
 
     public void OnEscape()

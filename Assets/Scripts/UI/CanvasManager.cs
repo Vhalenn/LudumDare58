@@ -7,10 +7,11 @@ public class CanvasManager : MonoBehaviour
     [Header("Elements")]
     public Canvas mainCanvas;
     public Canvas pauseCanvas;
-    public Canvas settingsCanvas;
-    public Canvas levelSelectionCanvas;
+    public UI_DialogManager dialogManager;
+    public UI_Quest uiQuest;
+    public UI_Timer Timer;
+    public UI_EndScreen endScreen;
 
-    [SerializeField] GameObject test;
 
     private void Start()
     {
@@ -23,6 +24,10 @@ public class CanvasManager : MonoBehaviour
     public void Play() // Load scene if not in menu
     {
         GameManager.instance.LoadLevel(value:0);
+    }
+    public void LoadManiMenu() // Load scene if not in menu
+    {
+        GameManager.instance.LoadMainMenu();
     }
 
     public void PauseMenuChangeState()

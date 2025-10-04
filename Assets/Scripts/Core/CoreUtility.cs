@@ -5,8 +5,11 @@ using System.Diagnostics;
 #endif
 
 using UnityEngine;
-using System;
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public static class CoreUtility
 {
@@ -22,6 +25,8 @@ public static class CoreUtility
 #endif
 
     }
+
+    public static float CurrentTime => Time.timeSinceLevelLoad;
 
     #region Enum
 
@@ -47,6 +52,38 @@ public static class CoreUtility
     }
 
     #endregion Enum
+
+    #region Array
+    // ARRAYS
+    public static int[] CreateOrderedArray(int length) // 1,2,3,4,5...
+    {
+        return Enumerable.Range(0, length).ToArray();
+    }
+
+    public static int[] CreateShuffledArray(int length)
+    {
+        return CreateOrderedArray(length).OrderBy(a => rng.Next()).ToArray();
+        //return CreateOrderedArray(length).Shuffle<int>();
+    }
+
+    private static System.Random rng = new System.Random();
+
+    public static void Shuffle<T>(this List<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+    // END - ARRAY
+    #endregion Array
+
+    #region EditorGizmo
 
     public static Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal, float angleY)
     {
@@ -101,4 +138,6 @@ public static class CoreUtility
         Handles.Label(pos, text, headStyle);
 #endif
     }
+
+    #endregion EditorGizmo
 }

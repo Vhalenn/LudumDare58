@@ -2,12 +2,16 @@
 
 public class Player : MovingEntity
 {
+    [SerializeField] private WorldManager worldManager;
+
     [Header("Base Components")]
     public Vector2 controlInput;
     public bool desiredJump;
-    [HideInInspector] private GameManager gameManager;
     [HideInInspector] private Transform camTransform;
     [HideInInspector] private Camera mainCam;
+
+    [Header("Elements")]
+    [SerializeField] private Transform giftParent;
 
     [Header("Stats")]
     [SerializeField] private float speed = 1f;
@@ -21,7 +25,13 @@ public class Player : MovingEntity
     public Vector3 contactNormal;
 
     [Header("Storage")]
+    [SerializeField] private Vector3 desiredVelocity;
     [SerializeField] private Vector3 velocity;
+    [SerializeField] private WorldCharacter inDialog; public bool CurrentlyInDialog => inDialog != null;
+    [SerializeField] private WorldCharacter hasGiftFromChara; public bool HasGiftFromChara => hasGiftFromChara != null;
+    [SerializeField] private GameObject currentGift;
+    public bool InMenu => worldManager && worldManager.Game && worldManager.Game.InMenu;
+
 
     private void Start()
     {
@@ -30,7 +40,6 @@ public class Player : MovingEntity
 
     public void Init()
     {
-        gameManager = GameManager.instance;
         if (!rb) rb = GetComponent<Rigidbody>();
         mainCam = Camera.main;
 
@@ -41,22 +50,31 @@ public class Player : MovingEntity
     {
         if (!rb) return;
 
+        velocity = rb.linearVelocity;
 
-        if(controlInput.magnitude < 0.1f)
+        if (controlInput.magnitude < 0.1f || CurrentlyInDialog || InMenu)
         {
-            velocity *= brakeForce;
+            velocity.Scale( new (brakeForce, 1, brakeForce));
         }
         else
         {
             // Should not be addition -> Should be capped
-            velocity = Vector3.Lerp(velocity, FollowingCamAngle(controlInput) * speed, 0.5f);
-            //velocity = rb.linearVelocity + FollowingCamAngle(controlInput) * speed;
+            //velocity = Vector3.Lerp(velocity, FollowingCamAngle(controlInput) * speed, 0.01f);
+
+            desiredVelocity = FollowingCamAngle(controlInput) * speed;
+            velocity = desiredVelocity;
+
+            velocity.y = rb.linearVelocity.y;
         }
 
-        rb.rotation = Quaternion.LookRotation(velocity);
+        if (!OnGround && velocity.y < 0) velocity.y *= 1.25f; // Force stronger gravity for test
 
         // Apply speed
-        rb.linearVelocity = velocity;
+        rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, velocity, 0.3f);
+        if(desiredVelocity.magnitude > 0.001f)
+        {
+            rb.rotation = Quaternion.Lerp(rb.rotation, Quaternion.LookRotation(desiredVelocity), 0.2f);
+        }
     }
 
     public Vector3 FollowingCamAngle(Vector2 input)
@@ -77,8 +95,10 @@ public class Player : MovingEntity
     }
 
 
+    // jumping
+    #region Jumping
+
     // Check if is on ground
-    
     public void ClearState()
     {
         groundContactCount = 0;
@@ -96,8 +116,14 @@ public class Player : MovingEntity
         EvaluateCollision(collision);
     }
 
+    private void OnCollisionExit(Collision collision)
+    {
+        ClearState();
+    }
+
     void EvaluateCollision(Collision collision)
     {
+        ClearState();
         for (int i = 0; i < collision.contactCount; i++)
         {
             Vector3 normal = collision.GetContact(i).normal;
@@ -109,9 +135,51 @@ public class Player : MovingEntity
             }
         }
     }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = OnGround ? Color.green : Color.red;
+        Gizmos.DrawWireSphere(transform.position, 0.5f);
+    }
+
     public void OnValidate()
     {
         minGroundDotProduct = Mathf.Cos(maxGroundAngle * Mathf.Deg2Rad);
     }
-    
+    #endregion Jumping
+
+
+    // Dialog
+    #region Dialog
+
+    public void SetInDialog(WorldCharacter chara)
+    {
+        inDialog = chara;
+    }
+
+    public void ReceiveGiftFromChara(WorldCharacter chara, GameObject giftObject)
+    {
+        hasGiftFromChara = chara;
+        currentGift = giftObject;
+
+        if (giftObject)
+        {
+            giftObject.transform.SetParent(giftParent);
+            giftObject.transform.localPosition = Vector3.zero;
+            giftObject.transform.localRotation = Quaternion.identity;
+        }
+    }
+
+    public void EndQuest()
+    {
+        if(currentGift)
+        {
+            currentGift.SetActive(false);
+        }
+
+        hasGiftFromChara = null;
+        currentGift = null;
+    }
+
+    #endregion Dialog
 }
