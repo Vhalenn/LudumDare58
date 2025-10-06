@@ -50,4 +50,9 @@ public class Villager : WorldCharacter
 
         StartTalking();
     }
+
+    private void OnDrawGizmos()
+    {
+        CoreUtility.DrawText(transform.position + Vector3.up*3, PublicName, Color.black, size:15);
+    }
 }

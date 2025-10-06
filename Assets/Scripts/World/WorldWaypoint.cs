@@ -5,6 +5,7 @@ using Sirenix.OdinInspector;
 
 public class WorldWaypoint : WorldElement
 {
+    [SerializeField] private int waypointID; public int WaypointId { get => waypointID; set => waypointID = value; }
 
     [Header("Elements")]
     [SerializeField] private WorldRoad closestRoad; public WorldRoad ClosestRoad => closestRoad;

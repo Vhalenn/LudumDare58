@@ -80,6 +80,7 @@ public static class CoreUtility
             list[n] = value;
         }
     }
+
     // END - ARRAY
     #endregion Array
 

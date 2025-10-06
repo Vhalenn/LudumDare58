@@ -11,6 +11,7 @@ public class DemonDen : WorldCharacter
     [SerializeField] private SphereCollider selfCollider;
 
     [Header("Dialog")]
+    [SerializeField] private QuestDialogStructure firstDialogStructure;
     [SerializeField] private QuestDialogStructure dialogStructure;
 
     private string startString = "Welcome my devoted, times are very hard. Come closer, I need you to seek goods for me.\n";
@@ -79,21 +80,38 @@ public class DemonDen : WorldCharacter
             return;
         }
 
-        string textStart = dialogStructure.GetRandomStarter();
-        string textLoc = dialogStructure.GetRandomLocation();
-        textLoc = textLoc.Replace("@Road", $"<color=blue>{currQuest.RoadName}</color>");
-        textLoc = textLoc.Replace("@Loc", $"<color=green>{currQuest.WaypointName}</color>");
+        // Get dialog possibilities
+        QuestDialogStructure dialStruct;
+        if(world.QuestCount <= 0)
+        {
+            dialStruct = firstDialogStructure;
+        }
+        else
+        {
+            dialStruct = dialogStructure;
+        }
 
-        string textChara = dialogStructure.GetRandomCharacter();
-        textChara = textChara.Replace("@Chara", $"<color=red>{currQuest.CharaName}</color>");
-
-        string textEnd = dialogStructure.GetRandomEnd();
-
-        string text = $"{textStart} {textLoc} {textChara} {textEnd}";
+        // Create the sentence
+        string text = GetDialogString(dialStruct, currQuest);
 
         DialogBubble newBubble = new(0, text);
         DialogData data = new(new DialogBubble[] { newBubble });
         world.StartDialog(this, data);
+    }
+
+    private string GetDialogString(QuestDialogStructure dialStruct, QuestData currQuest)
+    {
+        string textStart = dialStruct.GetRandomStarter();
+        string textLoc = dialStruct.GetRandomLocation();
+        textLoc = textLoc.Replace("@Road", $"<color=blue>{currQuest.RoadName}</color>");
+        textLoc = textLoc.Replace("@Loc", $"<color=green>{currQuest.WaypointName}</color>");
+
+        string textChara = dialStruct.GetRandomCharacter();
+        textChara = textChara.Replace("@Chara", $"<color=red>{currQuest.CharaName}</color>");
+
+        string textEnd = dialStruct.GetRandomEnd();
+
+        return $"{textStart} {textLoc} {textChara} {textEnd}";
     }
 
     #endregion Quest
