@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   world: {fileID: 0}
   publicName: East Path
+  spline: {fileID: 0}
   roadwidth: 2.99
   roadLength: 14.64
 --- !u!1001 &1298326277587431225
@@ -101,6 +102,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: pfb_RoadSign
       objectReference: {fileID: 0}
+    - target: {fileID: 3660182265322584922, guid: eccc08aade88b584bb1682c0a6292ddd, type: 3}
+      propertyPath: parent
+      value: 
+      objectReference: {fileID: 7377226224677870550}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

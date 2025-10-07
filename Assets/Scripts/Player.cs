@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 
 public class Player : MovingEntity
 {
     [SerializeField] private WorldManager worldManager;
+    [SerializeField] private Animator animator;
 
     [Header("Base Components")]
     public Vector2 controlInput;
@@ -23,6 +26,12 @@ public class Player : MovingEntity
     public bool OnGround => groundContactCount > 0;
     float minGroundDotProduct;
     public Vector3 contactNormal;
+
+
+    [Header("SafeZone")]
+    [SerializeField] private Vector3 lastSafePos;
+    [SerializeField] private List<TriggerSafeZone> safeAreaList;
+
 
     [Header("Storage")]
     [SerializeField] private Vector3 desiredVelocity;
@@ -50,9 +59,17 @@ public class Player : MovingEntity
     {
         if (!rb) return;
 
-        velocity = rb.linearVelocity;
+        if(rb.position.y < -1f) // Kill plane
+        {
+            rb.position = lastSafePos + Vector3.up * 0.3f;
 
-        if (controlInput.magnitude < 0.1f || CurrentlyInDialog || InMenu)
+            return;
+        }
+
+        velocity = rb.linearVelocity;
+        bool isNotMoving = controlInput.magnitude < 0.1f || CurrentlyInDialog || InMenu;
+
+        if (isNotMoving)
         {
             velocity.Scale( new (brakeForce, 1, brakeForce));
         }
@@ -67,6 +84,11 @@ public class Player : MovingEntity
             velocity.y = rb.linearVelocity.y;
         }
 
+        if(animator)
+        {
+            animator.SetFloat("run", isNotMoving ? 0f : 1f);
+        }
+
         if (!OnGround && velocity.y < 0) velocity.y *= 1.25f; // Force stronger gravity for test
 
         // Apply speed
@@ -74,6 +96,11 @@ public class Player : MovingEntity
         if(desiredVelocity.magnitude > 0.001f)
         {
             rb.rotation = Quaternion.Lerp(rb.rotation, Quaternion.LookRotation(desiredVelocity), 0.2f);
+        }
+
+        if(safeAreaList != null && safeAreaList.Count > 0)
+        {
+            lastSafePos = rb.position;
         }
     }
 
@@ -182,4 +209,25 @@ public class Player : MovingEntity
     }
 
     #endregion Dialog
+
+    #region SafeZone
+    public void AddTriggerZone(TriggerSafeZone safeZone)
+    {
+        if (safeAreaList == null) safeAreaList = new();
+
+        if (!safeAreaList.Contains(safeZone))
+        {
+            safeAreaList.Add(safeZone);
+        }
+    }
+    public void RemoveTriggerZone(TriggerSafeZone safeZone)
+    {
+        if (safeAreaList == null) safeAreaList = new();
+
+        if(safeAreaList.Contains(safeZone))
+        {
+            safeAreaList.Remove(safeZone);
+        }
+    }
+    #endregion SafeZone
 }

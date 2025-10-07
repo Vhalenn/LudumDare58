@@ -2,6 +2,15 @@ using UnityEngine;
 
 public class Villager : WorldCharacter
 {
+    [SerializeField] private WorldName worldName;
+
+    private void OnEnable()
+    {
+        if(worldName)
+        {
+            worldName.SetState(false);
+        }
+    }
 
     private void Update()
     {
@@ -48,7 +57,22 @@ public class Villager : WorldCharacter
     {
         if (!other.CompareTag("Player")) return;
 
+        if(worldName)
+        {
+            worldName.SetState(true);
+        }
+
         StartTalking();
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        if (worldName)
+        {
+            worldName.SetState(false);
+        }
     }
 
     private void OnDrawGizmos()

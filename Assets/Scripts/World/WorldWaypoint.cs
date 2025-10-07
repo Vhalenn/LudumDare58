@@ -10,6 +10,7 @@ public class WorldWaypoint : WorldElement
     [Header("Elements")]
     [SerializeField] private WorldRoad closestRoad; public WorldRoad ClosestRoad => closestRoad;
     [SerializeField] private WorldCharacter[] characterArray;
+    [SerializeField] private GameObject[] activiateForEachLevel;
 
     [Header("Stats")]
     [SerializeField] private float size;
