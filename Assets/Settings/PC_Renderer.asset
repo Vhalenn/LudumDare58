@@ -72,11 +72,11 @@ MonoBehaviour:
   m_Settings:
     technique: 2
     maxDrawDistance: 150
-    decalLayers: 1
+    decalLayers: 0
     dBufferSettings:
       surfaceData: 2
     screenSpaceSettings:
-      normalBlend: 0
+      normalBlend: 1
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0
