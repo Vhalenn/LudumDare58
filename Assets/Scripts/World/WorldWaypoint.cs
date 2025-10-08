@@ -10,13 +10,16 @@ public class WorldWaypoint : WorldElement
     [Header("Elements")]
     [SerializeField] private WorldRoad closestRoad; public WorldRoad ClosestRoad => closestRoad;
     [SerializeField] private WorldCharacter[] characterArray;
+
+    [Header("Evolution")]
+    [SerializeField] private GameObject activeOnlyFirstLayer;
     [SerializeField] private GameObject[] activiateForEachLevel;
 
     [Header("Stats")]
     [SerializeField] private float size;
 
     [Header("Storage")]
-    [SerializeField] private float corruptionLevel; // How much the demon has taken here
+    [SerializeField] private int corruptionLevel; // How much the demon has taken here
 
     [Button]
     private void GetAllChara()
@@ -32,6 +35,43 @@ public class WorldWaypoint : WorldElement
     }
 
     #region Quest
+
+    private void OnEnable()
+    {
+        RefreshVisual(0);
+    }
+
+    public void RefreshVisual(int state)
+    {
+        corruptionLevel = state;
+
+        if (activeOnlyFirstLayer)
+        {
+            activeOnlyFirstLayer.SetActive(state == 0);
+        }
+
+        int length = activiateForEachLevel.Length;
+
+        // If State == 1 -> 1 kill -> Display layer 0 == i
+        for (int i = 0; i < length; i++) // First element of array is for first kill
+        {
+            if (activiateForEachLevel[i] == null) continue;
+
+            activiateForEachLevel[i].SetActive(i < state);
+        }
+    }
+
+    [Button, ButtonGroup("Corruption")]
+    public void RiseCorruption()
+    {
+        RefreshVisual(corruptionLevel + 1);
+    }
+
+    [Button, ButtonGroup("Corruption")]
+    public void LowerCorruption() // Only for debug
+    {
+        RefreshVisual(corruptionLevel - 1);
+    }
 
     public WorldCharacter GetCharaForQuest()
     {

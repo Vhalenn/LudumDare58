@@ -13,6 +13,11 @@ public class WorldCharacter : WorldElement
     [SerializeField, ShowIf(nameof(hasSomethingToGive))] protected DialogData dialogData;
     [SerializeField, ShowIf(nameof(hasSomethingToGive))] protected GameObject gift;
 
+    [Header("Sound")]
+    [SerializeField] protected AudioSource audioSource;
+    [SerializeField] protected AudioClip audioTalk;
+    [SerializeField] public AudioClip audioClipGift;
+
     [Header("Storage")]
     [SerializeField] protected bool done;
     public bool CanBeQuestGoal => hasSomethingToGive && !done;

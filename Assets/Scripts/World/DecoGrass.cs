@@ -6,6 +6,7 @@ public class DecoGrass : MonoBehaviour
 
     [Header("Raycast")]
     [SerializeField] private bool drawGizmo = true;
+    [SerializeField] private Color gizmoColor = Color.green;
     [SerializeField] private float radius = 4f;
     [SerializeField] private float density = 4f;
 
@@ -13,11 +14,8 @@ public class DecoGrass : MonoBehaviour
     [SerializeField] private Matrix4x4[] grassMatrix;
     public Matrix4x4[] GrassMatrix => grassMatrix;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public bool GizmoState => drawGizmo;
+    public void SetGizmoState(bool state) => drawGizmo = state;
 
     [Button]
     private void SamplePositions()
@@ -49,16 +47,13 @@ public class DecoGrass : MonoBehaviour
     {
         if (!drawGizmo) return;
 
-        CoreUtility.DrawCircle(Color.green, transform.position, radius);
-        Gizmos.color = Color.green;
+        CoreUtility.DrawCircle(gizmoColor * 0.4f, transform.position, radius);
 
         int length = grassMatrix.Length;
         for (int i = 0; i < length; i++)
         {
             Matrix4x4 m = grassMatrix[i];
-            CoreUtility.DrawCircle(Color.green, m.GetPosition(), m.lossyScale.magnitude * 0.5f);
-
-            //Gizmos.DrawSphere(m.GetPosition(), m.lossyScale.magnitude * 0.5f);
+            CoreUtility.DrawCircle(gizmoColor, m.GetPosition(), m.lossyScale.magnitude * 0.25f);
         }
     }
 }

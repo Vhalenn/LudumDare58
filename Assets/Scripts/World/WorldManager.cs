@@ -18,6 +18,9 @@ public class WorldManager : MonoBehaviour
     [Header("Quest")]
     [SerializeField] private float questTimeDistanceRatio = 0.5f; // The lower the shorter the time to do the quest
     [SerializeField] private int questCount; public int QuestCount => questCount;
+    [SerializeField] private int errorCount; public int ErrorCount => errorCount;
+
+    public const int QUEST_TO_WIN = 6;
     [SerializeField] private QuestData currentQuest;
 
     [Header("Content")]
@@ -46,7 +49,7 @@ public class WorldManager : MonoBehaviour
 #if UNITY_EDITOR
                 if (accelerateTimeForDebug)
                 {
-                    currentQuest.timeLeft -= Time.deltaTime * 5;
+                    currentQuest.timeLeft -= Time.deltaTime * 10;
                 }
                 else
 #endif
@@ -59,7 +62,17 @@ public class WorldManager : MonoBehaviour
 
             if(currentQuest.timeLeft < 0f)
             {
-                LooseGame(); // No more time
+                errorCount++;
+
+                if(errorCount > 1)
+                {
+                    LooseGame(); // No more time
+                }
+                else // Not lost yet -> Display error dialog
+                {
+                    player.Teleport(Vector3.up * 0.25f);
+                    demonDen.EndQuestBecauseFailed();
+                }
             }
         }
     }
@@ -73,10 +86,10 @@ public class WorldManager : MonoBehaviour
 
     public void LooseGame() // Loose
     {
-        Debug.Log("You Lost the game");
+        Debug.Log($"You Lost the game - errorCount: {errorCount}");
 
         game.CanvasManager.endScreen.ShowLooseScreen();
-        ClearQuest();
+        ClearQuest(validated: false);
     }
 
     public bool QuestStarted()
@@ -84,9 +97,9 @@ public class WorldManager : MonoBehaviour
         return currentQuest.goalChara != null;
     }
 
-    public void ClearQuest()
+    public void ClearQuest(bool validated) 
     {
-        if(QuestStarted())
+        if(QuestStarted() && validated)
         {
             questCount++;
         }

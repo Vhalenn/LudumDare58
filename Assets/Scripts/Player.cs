@@ -32,6 +32,14 @@ public class Player : MovingEntity
     [SerializeField] private Vector3 lastSafePos;
     [SerializeField] private List<TriggerSafeZone> safeAreaList;
 
+    [Header("Sound")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioSource audioSourceWalking;
+    [SerializeField] private AudioSource audioSourceGift;
+    [SerializeField] private AudioClip stepSound;
+    [SerializeField] private AudioClip takeGiftSound;
+    [SerializeField] private AudioClip talkSound;
+
 
     [Header("Storage")]
     [SerializeField] private Vector3 desiredVelocity;
@@ -55,13 +63,18 @@ public class Player : MovingEntity
         //OnValidate();
     }
 
+    public void Teleport(Vector3 pos)
+    {
+        rb.position = pos;
+    }
+
     private void FixedUpdate()
     {
         if (!rb) return;
 
         if(rb.position.y < -1f) // Kill plane
         {
-            rb.position = lastSafePos + Vector3.up * 0.3f;
+            Teleport(lastSafePos + Vector3.up * 0.3f);
 
             return;
         }
@@ -82,6 +95,11 @@ public class Player : MovingEntity
             velocity = desiredVelocity;
 
             velocity.y = rb.linearVelocity.y;
+        }
+
+        if(audioSourceWalking)
+        {
+            audioSourceWalking.volume = Mathf.Lerp(audioSourceWalking.volume, isNotMoving ? 0f : 1f, 0.33f);
         }
 
         if(animator)
@@ -189,6 +207,18 @@ public class Player : MovingEntity
         hasGiftFromChara = chara;
         currentGift = giftObject;
 
+        if(audioSource && takeGiftSound)
+        {
+            audioSource.PlayOneShot(takeGiftSound);
+        }
+
+        if(audioSourceGift)
+        {
+            audioSourceGift.clip = chara.audioClipGift;
+            audioSourceGift.Play();
+            audioSourceGift.volume = 1f;
+        }
+
         if (giftObject)
         {
             giftObject.transform.SetParent(giftParent);
@@ -202,6 +232,17 @@ public class Player : MovingEntity
         if(currentGift)
         {
             currentGift.SetActive(false);
+        }
+
+        // Corrution of village should increase
+        if(hasGiftFromChara && hasGiftFromChara.Waypoint)
+        {
+            hasGiftFromChara.Waypoint.RiseCorruption();
+        }
+
+        if(audioSourceGift)
+        {
+            audioSourceGift.volume = 0f;
         }
 
         hasGiftFromChara = null;

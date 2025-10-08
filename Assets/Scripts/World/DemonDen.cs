@@ -9,10 +9,20 @@ public class DemonDen : WorldCharacter
 
     [Header("Elements")]
     [SerializeField] private SphereCollider selfCollider;
+    [SerializeField] private anim_FaceElement animFace;
+
+    [Header("DialogColor")]
+    [SerializeField] private Color colorRoad;
+    [SerializeField] private Color colorLoc;
+    [SerializeField] private Color colorChara;
 
     [Header("Dialog")]
     [SerializeField] private QuestDialogStructure firstDialogStructure;
     [SerializeField] private QuestDialogStructure dialogStructure;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip audioQuestStart;
+    [SerializeField] private AudioClip audioQuestDone;
 
     private string startString = "Welcome my devoted, times are very hard. Come closer, I need you to seek goods for me.\n";
     private string locString = "You will find what I need in Ukankh Village, by following the North Path.";
@@ -42,7 +52,7 @@ public class DemonDen : WorldCharacter
             return;
         }
 
-        if(world.QuestStarted())
+        if(world.QuestStarted()) // Finish quest
         {
             if(world.Player && world.Player.HasGiftFromChara)
             {
@@ -73,7 +83,7 @@ public class DemonDen : WorldCharacter
         QuestData currQuest = new();
         world.GetNextQuest(ref currQuest);
 
-        if(!currQuest.goalChara)
+        if(!currQuest.goalChara || world.QuestCount >= WorldManager.QUEST_TO_WIN) // Quest to win == 6
         {
             // WIN GAME
             world.WinGame();
@@ -82,7 +92,7 @@ public class DemonDen : WorldCharacter
 
         // Get dialog possibilities
         QuestDialogStructure dialStruct;
-        if(world.QuestCount <= 0)
+        if(world.QuestCount <= 0 && world.ErrorCount <= 0)
         {
             dialStruct = firstDialogStructure;
         }
@@ -97,17 +107,22 @@ public class DemonDen : WorldCharacter
         DialogBubble newBubble = new(0, text);
         DialogData data = new(new DialogBubble[] { newBubble });
         world.StartDialog(this, data);
+
+        if (audioSource)
+        {
+            audioSource.PlayOneShot(audioQuestStart);
+        }
     }
 
     private string GetDialogString(QuestDialogStructure dialStruct, QuestData currQuest)
     {
         string textStart = dialStruct.GetRandomStarter();
         string textLoc = dialStruct.GetRandomLocation();
-        textLoc = textLoc.Replace("@Road", $"<color=blue>{currQuest.RoadName}</color>");
-        textLoc = textLoc.Replace("@Loc", $"<color=green>{currQuest.WaypointName}</color>");
+        textLoc = textLoc.Replace("@Road", $"<color=#{ColorUtility.ToHtmlStringRGB(colorRoad)}>{currQuest.RoadName}</color>");
+        textLoc = textLoc.Replace("@Loc", $"<color=#{ColorUtility.ToHtmlStringRGB(colorLoc)}>{currQuest.WaypointName}</color>");
 
         string textChara = dialStruct.GetRandomCharacter();
-        textChara = textChara.Replace("@Chara", $"<color=red>{currQuest.CharaName}</color>");
+        textChara = textChara.Replace("@Chara", $"<color=#{ColorUtility.ToHtmlStringRGB(colorChara)}>{currQuest.CharaName}</color>");
 
         string textEnd = dialStruct.GetRandomEnd();
 
@@ -127,9 +142,26 @@ public class DemonDen : WorldCharacter
         }
     }
 
+    public void EndQuestBecauseFailed()
+    {
+        world.ClearQuest(validated: false);
+
+        // Give reward
+
+        // Talk
+        DialogBubble newBubble = new(0, "HhhhHhHhhHHh, I am not AT ALL proud of you! You won't have another chance!!");
+        DialogData data = new(new DialogBubble[] { newBubble });
+
+        world.Player.EndQuest();
+
+        world.StartDialog(this, data);
+
+        // -> New quest when dialog end
+    }
+
     private void EndQuest()
     {
-        world.ClearQuest();
+        world.ClearQuest(validated:true);
 
         // Give reward
 

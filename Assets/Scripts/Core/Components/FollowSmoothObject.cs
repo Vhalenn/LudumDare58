@@ -17,6 +17,11 @@ public class FollowSmoothObject : MonoBehaviour
 
     [SerializeField] Vector3 offsetPos;
 
+    private void OnEnable()
+    {
+        oldPos = Vector3.up * -50; // To force update -> Don't work lol
+    }
+
     // Update is called once per frame
     void LateUpdate()
     {
@@ -24,7 +29,7 @@ public class FollowSmoothObject : MonoBehaviour
 
         newPos = targetPos;        
 
-        if (newPos != oldPos)
+        //if (newPos != oldPos)
         {
 
             if (followPositionX && followPositionY && followPositionZ)
